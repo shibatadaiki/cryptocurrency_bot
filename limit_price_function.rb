@@ -1,3 +1,5 @@
+# 苦戦し出したら止めた方が良いがする
+
 require "json"
 require "net/http"
 require 'date'
@@ -12,14 +14,14 @@ require 'slack-notifier' # require: gem install 'slack-notifier' and set slack c
 DEFAULT_CRYPTOCURRENCY_AMOUNT = 0.01 # 指定がなかった際のデフォルト取引量
 ADJUST_CRYPTOCURRENCY_AMOUNT = 0.0005 # 仮想通貨取引量が理想値でなかった場合、この値ずつ加算していく（現状のデフォルトは小数点4桁の0.0005）
 BUY_CHALENGEABLE_TIMES_LIMIT = 200 # 指値購入試行回数
-SELL_CHALENGEABLE_TIMES_LIMIT = 10000 # 指値売却試行回数
+SELL_CHALENGEABLE_TIMES_LIMIT = 250 # 指値売却試行回数
 EARLY_SELL_SUCCESS_LINE = 150 # この数字以下の試行回数で売却に成功したら短期売買成功とみなす
 
 CUT_OFF_STANDARD_PERCENTAGE = 50 # ex: 49 / 50 = 0.98のため、50の時は98.0%以下の価格が損切りラインとなる
-CUT_OFF_STANDARD_AMOUNT = 30000 # ex: 30000の時は30000jpy以上下落したら損切りしてスクリプト自体を終了する
+CUT_OFF_STANDARD_AMOUNT = 12000 # ex: 12000の時は12000jpy以上下落したら損切りしてスクリプト自体を終了する
 ERROR_COUNT_FOR_STOP_LINE = 500 # ex: 500の時は500回エラーを起こすと実行状況に問題ありと判断して強制終了する
 BREAKING_JUDGE_TIMES = 4 # ex: 値を4に設定すると、5回連続で短期売買に成功したらインフレーション傾向ありとみなして少し様子見する
-STOP_LINE = 3 # この値を越えたらスクリプト自体を終了する
+STOP_LINE = 5 # この値を越えたらスクリプト自体を終了する
 
 PLICES_CONTINUE_TO_RISE_BREAK_SECONDS = 15 # インフレーション傾向時の様子見時間（秒）
 PANIC_BREAK_SECONDS = 50 # 場荒れ時の様子見時間（秒）
@@ -345,8 +347,8 @@ while true do
 
       purchased_coins_fell_1_5_percent = check_ava_buys < current_has_coin_price - (current_has_coin_price / CUT_OFF_STANDARD_PERCENTAGE).to_i
       funds_decreased_by_1_5_percent_jpy = current_total && first_total - CUT_OFF_STANDARD_AMOUNT >= current_total
-      # ex: 損切り条件 => 購入した仮想通貨の価格が1.5%以上下落 or 30000のjpyの損が確定 or 10000回試行しても売却できない（機会損失）
-      # 30000以上のjpyの損が確定した場合は暴落が発生していると判断して売買自体を停止する
+      # ex: 損切り条件 => 購入した仮想通貨の価格が1.5%以上下落 or 12000のjpyの損が確定 or 10000回試行しても売却できない（機会損失）
+      # 12000以上のjpyの損が確定した場合は暴落が発生していると判断して売買自体を停止する
       if purchased_coins_fell_1_5_percent || funds_decreased_by_1_5_percent_jpy || sell_check_count > SELL_CHALENGEABLE_TIMES_LIMIT
         funds_decreased_by_1_5_percent_jpy ? stop_check = true : cut_off_times += 1
 
